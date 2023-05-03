@@ -4,7 +4,8 @@ const Schema = mongoose.Schema
 // Add your models here.
 const BookSchema = new Schema({
   title: { type: String, required: true },
-  author: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  author: { type: String, required: true },
+  // user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   genre: String,
   publisher: String,
   pages: Number,

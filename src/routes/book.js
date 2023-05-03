@@ -15,6 +15,38 @@ router.get('/', async (req, res) => {
     }
 })
 
+// Search the google books API; return a list of top 5 matches
+// in the form they would need to be in to add a book
+router.get('/search', async (req, res) => {
+    const mapBooks = (rawBook) => {
+
+    };
+
+    try {
+        const request_string =
+        `https://www.googleapis.com/books/v1/volumes?q=${req.query.query}&key=${process.env.API_KEY}`;
+        const response = await fetch(request_string);
+        const jsonData = await response.json();
+        const raw = jsonData["items"];
+        const books = raw.map((item) => {
+            bookInfo = item["volumeInfo"]
+            cleanedBook = {
+                title: bookInfo["title"],
+                author: bookInfo["authors"],
+                genre: bookInfo["categories"],
+                publisher: bookInfo["publisher"],
+                pages: bookInfo["pageCount"]
+            }
+            return(cleanedBook);
+        })
+        console.log(books);
+        res.json({ books });
+    } catch (err) {
+        console.log(err.message);
+        res.status(400).json({ error: err.message });
+    }
+});
+
 /** Route to get one book by id. */
 router.get('/:bookId', async (req, res) => {
     try {
@@ -29,13 +61,13 @@ router.get('/:bookId', async (req, res) => {
 /** Route to add a new book. */
 router.post('/', async (req, res) => {
     try {
-        const username = req.body.author;
-        const user = await User.findOne({ username: username });
-        const { title, genre, published, pages } = req.body;
-        const book = new Book({ title: title, author: user, genre: genre, published: published, pages: pages });
+        // const username = req.body.user;
+        // const user = await User.findOne({ username: username });
+        const { title, genre, published, pages, author } = req.body;
+        const book = new Book({ title: title, author: author, genre: genre, published: published, pages: pages });
         await book.save();
-        user.books.unshift(book);
-        await user.save();
+        // user.books.unshift(book);
+        // await user.save();
         return res.json({ book: book });
     } catch (err) {
         console.log(err.message);
@@ -75,5 +107,7 @@ router.delete('/:bookId', async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 })
+
+
 
 module.exports = router
