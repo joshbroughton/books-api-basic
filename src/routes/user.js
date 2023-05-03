@@ -12,14 +12,14 @@ router.get('/', (req, res) => {
     });
 })
 
-router.get('/:userId', (req, res) => {
-    console.log(`User id: ${req.params.userId}`)
-    User.findById(req.params.userId).then((user) => {
-        return res.json({user})
-    })
-    .catch((err) => {
-        throw err.message
-    });
+router.get('/:userId', async (req, res) => {
+    try {
+        const user = await User.findOne({ _id: req.params.userId });
+        return res.json({ user })
+    } catch (err) {
+        console.log(err.message);
+        res.status(400).json({ error: err.message });
+    }
 })
 
 router.post('/', (req, res) => {
@@ -31,12 +31,15 @@ router.post('/', (req, res) => {
     })
 })
 
-router.put('/:userId', (req, res) => {
-    User.findByIdAndUpdate(req.params.userId, req.body).then((user) => {
-        return res.json({user})
-    }).catch((err) => {
-        throw err.message
-    })
+router.put('/:userId', async (req, res) => {
+    try {
+        await User.findByIdAndUpdate(req.params.userId, req.body);
+        const user = await User.findOne({ _id: req.params.userId });
+        return res.json({ user })
+    } catch (err) {
+        console.log(err.message);
+        res.status(400).json({ error: err.message });
+    }
 })
 
 router.delete('/:userId', (req, res) => {
