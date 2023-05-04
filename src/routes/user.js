@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
+const authenticate = require('../middleware/authenticate');
+
 const User = require('../models/user')
 
 // this would be an admin function, but different levels of authorization
@@ -15,9 +17,11 @@ const User = require('../models/user')
 //     });
 // })
 
-router.get('/:userId', async (req, res) => {
+// return information about current user, ie the user passed
+// in the JWT
+router.get('/show', authenticate, async (req, res) => {
     try {
-        const user = await User.findOne({ _id: req.params.userId });
+        const user = await User.findById(req.auth.userId);
         return res.json({ user })
     } catch (err) {
         console.log(err.message);
@@ -65,29 +69,38 @@ router.post('/login', async (req, res) => {
     }
   });
 
-  // update user
-router.put('/:userId', async (req, res) => {
+  // update the current user (user passed in the JWT)
+router.put('/update', authenticate, async (req, res) => {
     try {
-        await User.findByIdAndUpdate(req.params.userId, req.body);
-        const user = await User.findOne({ _id: req.params.userId });
-        return res.json({ user })
+        const user = await User.findById(req.auth.userId);
+        console.log(req.body);
+        if (req.body.username) {
+            user.username = req.body.username;
+        }
+        if (req.body.password) {
+            user.password = req.body.password;
+        }
+        await user.save();
+        return res.json({ message: "Updated successfully!" })
     } catch (err) {
         console.log(err.message);
         res.status(400).json({ error: err.message });
     }
 })
 
-router.delete('/:userId', (req, res) => {
-    User.findByIdAndDelete(req.params.userId).then(() => {
+// delete the current user (user passed in JWT)
+router.delete('/delete', authenticate, async (req, res) => {
+    try {
+        await User.findByIdAndDelete(req.auth.userId);
         return res.json({
-            'message': 'Successfully deleted.',
+            'message': 'User successfully deleted.',
             '_id': req.params.userId
-        })
-    })
-    .catch((err) => {
-        throw err.message
-    })
-})
+        });
+    } catch (err) {
+        console.log(err.message);
+        res.status(400).json({ error: err.message });
+    }
+});
 
 module.exports = router
 

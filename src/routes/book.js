@@ -1,13 +1,13 @@
 const express = require('express')
 const router = express.Router();
-const { expressjwt } = require('express-jwt');
 
-const authenticate = expressjwt({ secret: process.env.SECRET_KEY, algorithms: ["HS256"] });
+
+const authenticate = require('../middleware/authenticate');
 
 const Book = require('../models/book')
 const User = require('../models/user')
 
-/** Route to get all books. */
+/** Route to get all books for a user */
 router.get('/', authenticate, async (req, res) => {
     try {
         const user = await User.findById(req.auth.userId);
@@ -28,10 +28,6 @@ router.get('/', authenticate, async (req, res) => {
 // Search the google books API; return a list of top 5 matches
 // in the form they would need to be in to add a book
 router.get('/search', async (req, res) => {
-    const mapBooks = (rawBook) => {
-
-    };
-
     try {
         const request_string =
         `https://www.googleapis.com/books/v1/volumes?q=${req.query.query}&key=${process.env.API_KEY}`;
@@ -100,9 +96,8 @@ router.put('/:bookId', authenticate, async (req, res) => {
 router.delete('/:bookId', authenticate, async (req, res) => {
     try {
         const book = await Book.findById(req.params.bookId);
-        authorId= book.author;
-        const user = await User.findById(authorId);
-        console.log(user);
+        userId = req.auth.userId;
+        const user = await User.findById(userId);
         const index = user.books.indexOf(book._id);
         user.books.splice(index, 1);
         await user.save();
