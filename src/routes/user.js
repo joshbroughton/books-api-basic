@@ -73,7 +73,6 @@ router.post('/login', async (req, res) => {
 router.put('/update', authenticate, async (req, res) => {
     try {
         const user = await User.findById(req.auth.userId);
-        console.log(req.body);
         if (req.body.username) {
             user.username = req.body.username;
         }
