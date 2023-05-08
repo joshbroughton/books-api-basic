@@ -1,12 +1,13 @@
-const mongoose = require('mongoose')
-const Schema = mongoose.Schema
+const mongoose = require('mongoose');
+
+const { Schema } = mongoose;
 const bcrypt = require('bcryptjs');
 
 const UserSchema = new Schema({
   username: { type: String, required: true },
   password: { type: String, select: false },
-  books: [{ type: Schema.Types.ObjectId, ref: "Book" }]
-})
+  books: [{ type: Schema.Types.ObjectId, ref: 'Book' }],
+});
 
 // This is the function that hashes the password
 UserSchema.pre('save', async function (next) {
@@ -31,6 +32,6 @@ UserSchema.methods.comparePassword = function (password, done) {
   });
 };
 
-const User = mongoose.model('User', UserSchema)
+const User = mongoose.model('User', UserSchema);
 
-module.exports = User
+module.exports = User;
