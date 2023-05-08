@@ -29,13 +29,13 @@ router.get('/', authenticate, async (req, res) => {
 // in the form they would need to be in to add a book
 router.get('/search', async (req, res) => {
   try {
-    const request_string = `https://www.googleapis.com/books/v1/volumes?q=${req.query.query}&key=${process.env.API_KEY}`;
-    const response = await fetch(request_string);
+    const requestString = `https://www.googleapis.com/books/v1/volumes?q=${req.query.query}&key=${process.env.API_KEY}`;
+    const response = await fetch(requestString);
     const jsonData = await response.json();
     const raw = jsonData.items;
     const books = raw.map((item) => {
-      bookInfo = item.volumeInfo;
-      cleanedBook = {
+      const bookInfo = item.volumeInfo;
+      const cleanedBook = {
         title: bookInfo.title,
         author: bookInfo.authors[0],
         genre: bookInfo.categories[0],
@@ -44,10 +44,8 @@ router.get('/search', async (req, res) => {
       };
       return (cleanedBook);
     });
-    console.log(books);
     res.json({ books });
   } catch (err) {
-    console.log(err.message);
     res.status(400).json({ error: err.message });
   }
 });
