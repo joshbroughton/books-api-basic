@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const jwt = require('jsonwebtoken');
-const app = require('../server.js');
+const app = require('../server');
 
-const Book = require('../models/book.js');
-const User = require('../models/user.js');
+const Book = require('../models/book');
+const User = require('../models/user');
 
 chai.config.includeStack = true;
 
@@ -42,6 +42,7 @@ describe('Book API endpoint tests', () => {
       genre: 'Fiction',
       publisher: 'Berkley Publishing Group',
       pages: 380,
+      _id: SAMPLE_OBJECT_ID,
     });
 
     bookTwo = new Book({
@@ -73,11 +74,89 @@ describe('Book API endpoint tests', () => {
       .get('/books')
       .set('Authorization', `Bearer ${token}`)
       .end(async (error, response) => {
-        if (error) { console.log(err); }
+        if (error) { console.log(error); }
         expect(response).to.have.status(200);
         expect(response.body.books).to.be.an('array');
         expect(response.body.books[0]).to.deep.equal(bookOne);
         expect(response.body.books[1]).to.deep.equal(bookTwo);
+      });
+  });
+
+  it('should return 10 books from the google books API', async () => {
+    chai.request(app)
+      .get('/books/search')
+      .query({ q: 'the house of god' })
+      .end(async (error, response) => {
+        if (error) { console.log(error); }
+        expect(response).to.have.status(200);
+        expect(response.body.books).to.be.an('array');
+        expect(response.body.books.length).to.equal(10);
+      });
+  });
+
+  it('should get one book by bookId', async () => {
+    chai.request(app)
+      .get(`/books/${SAMPLE_OBJECT_ID}`)
+      .set('Authorization', `Bearer ${token}`)
+      .end(async (error, response) => {
+        if (error) { console.log(error); }
+        expect(response).to.have.status(200);
+        expect(response.body.book).to.deep.equal(bookOne);
+      });
+  });
+
+  it('should create a new book', async () => {
+    chai.request(app)
+      .post('/books')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        title: "Man's 4th Best Hospital",
+        author: 'Samuel Shem',
+        genre: 'Fiction',
+        publisher: 'Penguin',
+        pages: 384,
+      })
+      .end(async (error, response) => {
+        if (error) { console.log(error); }
+        expect(response).to.have.status(200);
+        expect(response.body.book).to.deep.equal({
+          title: "Man's 4th Best Hospital",
+          author: 'Samuel Shem',
+          genre: 'Fiction',
+          publisher: 'Penguin',
+          pages: 384,
+        });
+        const book = await Book.findOne({ title: "Man's 4th Best Hospital" });
+        expect(book).to.be.an('object');
+      });
+  });
+
+  it('should delete a book by bookId', async () => {
+    chai.request(app)
+      .delete(`/books/${SAMPLE_OBJECT_ID}`)
+      .set('Authorization', `Bearer ${token}`)
+      .end(async (error, response) => {
+        if (error) { console.log(error); }
+        expect(response).to.have.status(200);
+        expect(response.body.message).to.equal(`Book with id ${SAMPLE_OBJECT_ID} deleted.`);
+        const book = await Book.findOne({ _id: SAMPLE_OBJECT_ID });
+        expect(book).to.be.null;
+      });
+  });
+
+  it('should update a book by bookId', async () => {
+    chai.request(app)
+      .put(`/books/${SAMPLE_OBJECT_ID}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        title: 'The House of God (Revised Edition)',
+      })
+      .end(async (error, response) => {
+        if (error) { console.log(error); }
+        expect(response).to.have.status(200);
+        expect(response.body.book.title).to.equal('The House of God (Revised Edition)');
+        const book = await Book.findOne({ _id: SAMPLE_OBJECT_ID });
+        expect(book.title).to.equal('The House of God (Revised Edition)');
       });
   });
 });

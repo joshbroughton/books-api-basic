@@ -4,16 +4,13 @@ const mongoose = require('mongoose');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
-const { assert } = chai;
 const jwt = require('jsonwebtoken');
-const chaiJWT = require('chai-jwt');
 
 const User = require('../models/user.js');
 
 chai.config.includeStack = true;
 
 const { expect } = chai;
-const should = chai.should();
 chai.use(chaiHttp);
 
 /**
