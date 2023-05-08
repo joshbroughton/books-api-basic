@@ -1,1 +1,1 @@
-This is a simple Books API, which allows users to manage a library of books, or search for books in order to get new entries for their library. See the full documentation for use <link-to-the-docs-here>
+This is a simple Books API, which allows users to manage a library of books, or search for books in order to get new entries for their library. See the full documentation for use [here](https://joshbroughton.github.io/books-api-basic/)
