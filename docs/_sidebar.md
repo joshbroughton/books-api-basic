@@ -1,0 +1,4 @@
+- # Menu
+    - ## [Home](/)
+    - ## [User Endpoints](endpoints.md)
+    - ## [Book Endpoints](books.md)
